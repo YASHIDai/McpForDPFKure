@@ -1,0 +1,8 @@
+# MCPフレームワーク
+fastmcp>=2.3.0
+
+# 非同期HTTPクライアント
+httpx>=0.27.0
+
+# 型ヒント補助（Python 3.8対応）
+typing-extensions>=4.0.0
