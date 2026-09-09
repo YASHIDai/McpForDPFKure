@@ -26,16 +26,16 @@ jobs:
 
       # 2. Google Cloud 認証
       # ✅ WIFセットアップ済みの場合はこちらを使用（推奨）
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
-          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
-      # ⚠️ WIF未設定の場合は上記をコメントアウトして以下を使用（暫定）
       # - name: Authenticate to Google Cloud
       #   uses: google-github-actions/auth@v2
       #   with:
-      #     credentials_json: ${{ secrets.GCP_SA_KEY }}
+      #     workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+      #     service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+      # ⚠️ WIF未設定の場合は上記をコメントアウトして以下を使用（暫定）
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
 
       # 3. Google Cloud SDK の設定
       - name: Set up Google Cloud SDK
