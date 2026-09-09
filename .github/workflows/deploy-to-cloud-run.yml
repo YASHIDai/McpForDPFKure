@@ -8,7 +8,7 @@ on:
 
 env:
   GCP_REGION: asia-northeast1
-  ARTIFACT_REGISTRY_REPO: kure-mcp
+  ARTIFACT_REGISTRY_REPO: cloud-run-source-deploy
   IMAGE_NAME: kure-dataplatform-mcp
 
 jobs:
