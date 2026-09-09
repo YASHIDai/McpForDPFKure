@@ -71,8 +71,8 @@ jobs:
             --image ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPO }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
             --region ${{ env.GCP_REGION }} \
             --platform managed \
-            --set-secrets "KURE_ECP_API_KEY=KURE_ECP_API_KEY:latest" \
-            --set-secrets "MCP_ACCESS_TOKEN=MCP_ACCESS_TOKEN:latest" \
+            --set-secrets "KURE_ECP_API_KEY=kure-ecp-api-key:latest" \
+            --set-secrets "MCP_ACCESS_TOKEN=mcp-access-token:latest" \
             --allow-unauthenticated \
             --project ${{ secrets.GCP_PROJECT_ID }} \
             --quiet
