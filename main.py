@@ -39,12 +39,14 @@ main = FastMCP(name="kure-dataplatform-mcp")
 # prefix はDifyのツール名に付与される名前空間
 # 例: traffic/get_traffic_data, population/get_registered_population
 # ---------------------------------------------------------------
-main.mount(traffic_mcp,     prefix="traffic")
-main.mount(population_mcp,  prefix="population")
-main.mount(welfare_mcp,     prefix="welfare")
-main.mount(disaster_mcp,    prefix="disaster")
-main.mount(industry_mcp,    prefix="industry")
-main.mount(environment_mcp, prefix="environment")
+# ✅ 修正後（prefix を第1引数に移動）
+main.mount("traffic",     traffic_mcp)
+main.mount("population",  population_mcp)
+main.mount("welfare",     welfare_mcp)
+main.mount("disaster",    disaster_mcp)
+main.mount("industry",    industry_mcp)
+main.mount("environment", environment_mcp)
+
 
 logger.info("全子サーバーのmountが完了しました。")
 logger.info("利用可能なカテゴリ: traffic / population / welfare / disaster / industry / environment")
