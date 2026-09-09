@@ -3,8 +3,8 @@ name: Deploy to Cloud Run
 on:
   push:
     branches:
-      - main  # main ブランチへのpushで自動実行
-  workflow_dispatch:  # 手動実行も可能
+      - main
+  workflow_dispatch:
 
 env:
   GCP_REGION: asia-northeast1
@@ -25,10 +25,17 @@ jobs:
         uses: actions/checkout@v4
 
       # 2. Google Cloud 認証
+      # ✅ WIFセットアップ済みの場合はこちらを使用（推奨）
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+      # ⚠️ WIF未設定の場合は上記をコメントアウトして以下を使用（暫定）
+      # - name: Authenticate to Google Cloud
+      #   uses: google-github-actions/auth@v2
+      #   with:
+      #     credentials_json: ${{ secrets.GCP_SA_KEY }}
 
       # 3. Google Cloud SDK の設定
       - name: Set up Google Cloud SDK
@@ -42,9 +49,12 @@ jobs:
       # 5. Docker イメージのビルド
       - name: Build Docker image
         run: |
-          docker build -t ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPO }}/${{ env.IMAGE_NAME }}:${{ github.sha }} .
-          docker tag ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPO }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
-                     ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPO }}/${{ env.IMAGE_NAME }}:latest
+          docker build \
+            -t ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPO }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            .
+          docker tag \
+            ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPO }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPO }}/${{ env.IMAGE_NAME }}:latest
 
       # 6. Artifact Registry にプッシュ
       - name: Push to Artifact Registry
@@ -53,14 +63,19 @@ jobs:
           docker push ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPO }}/${{ env.IMAGE_NAME }}:latest
 
       # 7. Cloud Run にデプロイ
+      # ✅ --set-secrets でSecret Managerのシークレットを注入
+      # ✅ --quiet でプロンプトによるハングを防止
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy ${{ env.IMAGE_NAME }} \
             --image ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPO }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
             --region ${{ env.GCP_REGION }} \
             --platform managed \
+            --set-secrets "KURE_ECP_API_KEY=KURE_ECP_API_KEY:latest" \
+            --set-secrets "MCP_ACCESS_TOKEN=MCP_ACCESS_TOKEN:latest" \
             --allow-unauthenticated \
-            --project ${{ secrets.GCP_PROJECT_ID }}
+            --project ${{ secrets.GCP_PROJECT_ID }} \
+            --quiet
 
       # 8. デプロイ完了通知
       - name: Print deployment info
